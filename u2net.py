@@ -77,22 +77,22 @@ class RSU7(keras.layers.Layer):
 
         hx7 = self.conv_b7(hx6)
 
-        hx6d = self.conv_b6_d(tf.concat([hx7, hx6], axis=0))
+        hx6d = self.conv_b6_d(tf.concat([hx7, hx6], axis=3))
         hx6dup = self.upsample_5(hx6d)
 
-        hx5d = self.conv_b5_d(tf.concat([hx6dup, hx5], axis=0))
+        hx5d = self.conv_b5_d(tf.concat([hx6dup, hx5], axis=3))
         hx5dup = self.upsample_4(hx5d)
 
-        hx4d = self.conv_b4_d(tf.concat([hx5dup, hx4], axis=0))
+        hx4d = self.conv_b4_d(tf.concat([hx5dup, hx4], axis=3))
         hx4dup = self.upsample_3(hx4d)
 
-        hx3d = self.conv_b3_d(tf.concat([hx4dup, hx3], axis=0))
+        hx3d = self.conv_b3_d(tf.concat([hx4dup, hx3], axis=3))
         hx3dup = self.upsample_2(hx3d)
 
-        hx2d =  self.conv_b2_d(tf.concat([hx3dup, hx2], axis=0))
+        hx2d =  self.conv_b2_d(tf.concat([hx3dup, hx2], axis=3))
         hx2dup = self.upsample_1(hx2d)
 
-        hx1d = self.conv_b1_d(tf.concat([hx2dup, hx1], axis=0))
+        hx1d = self.conv_b1_d(tf.concat([hx2dup, hx1], axis=3))
         
         return hx1d + hxin
 
@@ -149,19 +149,19 @@ class RSU6(keras.layers.Layer):
 
         hx6 = self.conv_b6(hx5)
 
-        hx5d = self.conv_b5_d(tf.concat([hx6, hx5], axis=0))
+        hx5d = self.conv_b5_d(tf.concat([hx6, hx5], axis=3))
         hx5dup = self.upsample_4(hx5d)
 
-        hx4d = self.conv_b4_d(tf.concat([hx5dup, hx4], axis=0))
+        hx4d = self.conv_b4_d(tf.concat([hx5dup, hx4], axis=3))
         hx4dup = self.upsample_3(hx4d)
 
-        hx3d = self.conv_b3_d(tf.concat([hx4dup, hx3], axis=0))
+        hx3d = self.conv_b3_d(tf.concat([hx4dup, hx3], axis=3))
         hx3dup = self.upsample_2(hx3d)
 
-        hx2d =  self.conv_b2_d(tf.concat([hx3dup, hx2], axis=0))
+        hx2d =  self.conv_b2_d(tf.concat([hx3dup, hx2], axis=3))
         hx2dup = self.upsample_1(hx2d)
 
-        hx1d = self.conv_b1_d(tf.concat([hx2dup, hx1], axis=0))
+        hx1d = self.conv_b1_d(tf.concat([hx2dup, hx1], axis=3))
         
         return hx1d + hxin
 
@@ -210,16 +210,16 @@ class RSU5(keras.layers.Layer):
 
         hx5 = self.conv_b5(hx4)
 
-        hx4d = self.conv_b4_d(tf.concat([hx5, hx4], axis=0))
+        hx4d = self.conv_b4_d(tf.concat([hx5, hx4], axis=3))
         hx4dup = self.upsample_3(hx4d)
 
-        hx3d = self.conv_b3_d(tf.concat([hx4dup, hx3], axis=0))
+        hx3d = self.conv_b3_d(tf.concat([hx4dup, hx3], axis=3))
         hx3dup = self.upsample_2(hx3d)
 
-        hx2d =  self.conv_b2_d(tf.concat([hx3dup, hx2], axis=0))
+        hx2d =  self.conv_b2_d(tf.concat([hx3dup, hx2], axis=3))
         hx2dup = self.upsample_1(hx2d)
 
-        hx1d = self.conv_b1_d(tf.concat([hx2dup, hx1], axis=0))
+        hx1d = self.conv_b1_d(tf.concat([hx2dup, hx1], axis=3))
         
         return hx1d + hxin
 
@@ -260,13 +260,13 @@ class RSU4(keras.layers.Layer):
 
         hx4 = self.conv_b4(hx3)
 
-        hx3d = self.conv_b3_d(tf.concat([hx4, hx3], axis=0))
+        hx3d = self.conv_b3_d(tf.concat([hx4, hx3], axis=3))
         hx3dup = self.upsample_2(hx3d)
 
-        hx2d =  self.conv_b2_d(tf.concat([hx3dup, hx2], axis=0))
+        hx2d =  self.conv_b2_d(tf.concat([hx3dup, hx2], axis=3))
         hx2dup = self.upsample_1(hx2d)
 
-        hx1d = self.conv_b1_d(tf.concat([hx2dup, hx1], axis=0))
+        hx1d = self.conv_b1_d(tf.concat([hx2dup, hx1], axis=3))
         
         return hx1d + hxin
 
@@ -290,10 +290,9 @@ class RSU4F(keras.layers.Layer):
         hx2 = self.conv_b2(hx1)
         hx3 = self.conv_b3(hx2)
         hx4 = self.conv_b4(hx3)
-        hx3d = self.conv_b3_d(tf.concat([hx4, hx3], axis=0))
-        hx2d = self.conv_b2_d(tf.concat([hx3d, hx2], axis=0))
-        hx1d = self.conv_b1_d(tf.concat([hx2d, hx1], axis=0))
-
+        hx3d = self.conv_b3_d(tf.concat([hx4, hx3], axis=3))
+        hx2d = self.conv_b2_d(tf.concat([hx3d, hx2], axis=3))
+        hx1d = self.conv_b1_d(tf.concat([hx2d, hx1], axis=3))
         return hx1d + hxin
 
 class U2NET(keras.models.Model):
@@ -360,19 +359,19 @@ class U2NET(keras.models.Model):
         hx6 = self.stage6(hx)
         hx6up = self.upsample_1(hx6)
 
-        hx5d = self.stage5d(tf.concat([hx6up, hx5], axis=0))
+        hx5d = self.stage5d(tf.concat([hx6up, hx5], axis=3))
         hx5dup = self.upsample_2(hx5d)
 
-        hx4d = self.stage4d(tf.concat([hx5dup, hx4], axis=0))
+        hx4d = self.stage4d(tf.concat([hx5dup, hx4], axis=3))
         hx4dup = self.upsample_3(hx4d)
 
-        hx3d = self.stage3d(tf.concat([hx4dup, hx3], axis=0))
+        hx3d = self.stage3d(tf.concat([hx4dup, hx3], axis=3))
         hx3dup = self.upsample_4(hx3d)
 
-        hx2d = self.stage2d(tf.concat([hx3dup, hx2], axis=0))
+        hx2d = self.stage2d(tf.concat([hx3dup, hx2], axis=3))
         hx2dup = self.upsample_5(hx2d)
 
-        hx1d = self.stage1d(tf.concat([hx2dup, hx1], axis=0))
+        hx1d = self.stage1d(tf.concat([hx2dup, hx1], axis=3))
 
         d1 = self.side1(hx1d)
 
@@ -401,7 +400,7 @@ class U2NET(keras.models.Model):
         d6 = self.upsample_5(d6)
         d6 = self.upsample_5(d6)
 
-        d0 = self.outconv(tf.concat([d1, d2, d3, d4, d5, d6], axis=0))
+        d0 = self.outconv(tf.concat([d1, d2, d3, d4, d5, d6], axis=3))
 
         sig = keras.activations.sigmoid
         return sig(d0), sig(d1), sig(d2), sig(d3), sig(d4), sig(d5), sig(d6)

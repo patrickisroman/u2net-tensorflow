@@ -23,6 +23,3 @@ model.summary()
 
 inp = np.expand_dims(img, axis=0)
 out = model.predict(inp)
-
-plt.imshow(img)
-plt.show()
