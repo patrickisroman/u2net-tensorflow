@@ -5,16 +5,16 @@ from tensorflow.keras.layers import Conv2D, Input, BatchNormalization, ReLU, Max
 class ConvBlock(keras.layers.Layer):
     def __init__(self, in_ch=3, out_ch=3,dirate=1):
         super(ConvBlock, self).__init__()
-        self.conv_s1 = Conv2D(out_ch, (3, 3), strides=1, padding='same', dilation_rate=dirate)
-        self.bn_s1 = BatchNormalization()
-        self.relu_s1 = ReLU()
+        self.conv = Conv2D(out_ch, (3, 3), strides=1, padding='same', dilation_rate=dirate)
+        self.bn = BatchNormalization()
+        self.relu = ReLU()
     
     def call(self, inputs):
         hx = inputs
 
-        x = self.conv_s1(hx)
-        x = self.bn_s1(x)
-        x = self.relu_s1(x)
+        x = self.conv(hx)
+        x = self.bn(x)
+        x = self.relu(x)
 
         return x
 

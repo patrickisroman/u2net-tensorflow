@@ -20,7 +20,6 @@ model = keras.Model(inputs=inputs, outputs=outputs, name='u2netmodel')
 
 model.compile(optimizer='sgd', loss='sparse_categorical_crossentropy', metrics=None)
 model.summary()
-
 inp = np.expand_dims(img, axis=0)
 d1, d2, d3, d4, d5, d6, d7 = model.predict(inp)
 
