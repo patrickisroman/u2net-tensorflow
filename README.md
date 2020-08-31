@@ -1,6 +1,6 @@
 # u2net-tensorflow
 
-A tensorflow implementation of the [U^2-Net [...] for Salient Object Detection](https://arxiv.org/pdf/2005.09007.pdf) using Keras & Functional API
+A tensorflow implementation of the [U2-Net: Going Deeper with Nested U-Structure for Salient Object Detection](https://arxiv.org/pdf/2005.09007.pdf) using Keras & Functional API
 
 Based on the [PyTorch version](https://github.com/NathanUA/U-2-Net) by NathanUA
 

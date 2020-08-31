@@ -22,4 +22,13 @@ model.compile(optimizer='sgd', loss='sparse_categorical_crossentropy', metrics=N
 model.summary()
 
 inp = np.expand_dims(img, axis=0)
-out = model.predict(inp)
+d1, d2, d3, d4, d5, d6, d7 = model.predict(inp)
+
+pred = d1[0,:,:,:]
+
+fig=plt.figure(figsize=(1, 2))
+fig.add_subplot(1, 2, 1)
+plt.imshow(inp[0], cmap='gray')
+fig.add_subplot(1, 2, 2)
+plt.imshow(pred, cmap='gray')
+plt.show()
