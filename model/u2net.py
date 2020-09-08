@@ -403,4 +403,4 @@ class U2NET(keras.models.Model):
         d0 = self.outconv(tf.concat([d1, d2, d3, d4, d5, d6], axis=3))
 
         sig = keras.activations.sigmoid
-        return sig(d0), sig(d1), sig(d2), sig(d3), sig(d4), sig(d5), sig(d6)
+        return tf.stack([sig(d0), sig(d1), sig(d2), sig(d3), sig(d4), sig(d5), sig(d6)])

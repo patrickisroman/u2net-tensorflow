@@ -16,9 +16,11 @@ u2net = U2NET()
 out = u2net(inp)
 ```
 
-## Test
+## Training
+To train, place your dataset in the `data` folder, with a separate subdirectory for image and masks.
+
 ```
-python simpletest.py
+python train.py
 ```
 
 ## Citation
