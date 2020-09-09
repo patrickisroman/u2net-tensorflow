@@ -4,39 +4,53 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 import pathlib
+import signal
 
+from config import *
 from dataloader import *
-
 from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, Input, BatchNormalization, ReLU, MaxPool2D, UpSampling2D
-
 from model.u2net import U2NET
 
-# Model definition
-default_in_shape  = (320, 320, 3)
-default_out_shape = (320, 320, 1)
-batch_size = 12
-epochs = 10000
+
+# Arguments
+parser = argparse.ArgumentParser(description='U^2-NET Salient Object Detection')
+parser.add_argument('--batch_size', default=None, type=int,
+                    help='Training batch size')
+parser.add_argument('--lr', '--learning_rate', default=None, type=float,
+                    help='Optimizer learning rate. Default: %s' % learning_rate)
+parser.add_argument('--save_interval', default=None, type=int,
+                    help='How many iterations between saving of model weights')
+parser.add_argument('--model_file', default=None, type=str,
+                    help='Output location for model weights. Default: %s' % model_file)
+parser.add_argument('--resume', default=None, type=str,
+                    help="Resume training network from saved weights file. Leave as None to start new training.")
+args = parser.parse_args()
+
+if args.batch_size:
+    batch_size = args.batch_size
+
+if args.lr:
+    learning_rate = args.lr
+
+if args.save_interval:
+    save_interval = args.save_interval
+
+if args.model_file:
+    model_file = args.model_file
+
+if args.resume:
+    resume = args.resume
 
 # Previewing, not necessary
 img = cv2.imread('examples/skateboard.jpg')
 img = cv2.resize(img, dsize=default_in_shape[:2], interpolation=cv2.INTER_CUBIC)
 inp = np.expand_dims(img, axis=0)
 
-# Dataset
-dataset = 'data/dutstr/'
-dataset_path = pathlib.Path(dataset)
-image_path = dataset_path.joinpath('image')
-mask_path = dataset_path.joinpath('mask')
-
 # Optimizer / Loss
-adam = keras.optimizers.Adam(learning_rate=0.001, beta_1=.9, beta_2=.999, epsilon=1e-08)
+adam = keras.optimizers.Adam(learning_rate=learning_rate, beta_1=.9, beta_2=.999, epsilon=1e-08)
 bce = keras.losses.BinaryCrossentropy()
 cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath='model.ckpt', save_weights_only=True, verbose=1)
-
-# Args
-parser = argparse.ArgumentParser(description='U^2-NET Salient Object Detection')
-args = parser.parse_args()
 
 def bce_loss(y_true, y_pred):
     y_p = tf.expand_dims(y_pred, axis=-1)
@@ -64,9 +78,35 @@ def train():
     model.compile(optimizer=adam, loss=bce_loss, metrics=None)
     model.summary()
 
+    if resume:
+        print('Loading weights from %s' % resume)
+        model.load_weights(resume)
+
+    # setup the dataset if the user hasn't set it up yet
+    download_duts_tr_dataset()
+
+    # helper function to save state of model
+    def save_weights():
+        print('Saving state of model to %s' % model_file)
+        model.save_weights(str(model_file))
+    
+    # signal handler for early abortion to autosave model state
+    def autosave(sig, frame):
+        print('Training aborted early... Saving weights.')
+        save_weights()
+        exit(0)
+
+    for sig in [signal.SIGABRT, signal.SIGINT, signal.SIGTSTP]:
+        signal.signal(sig, autosave)
+
+    # start training
+    print('Starting training')
     for e in range(epochs):
         feed, out = load_training_batch(batch_size=batch_size)
         loss = model.train_on_batch(feed, out)
+
+        if save_interval and e > 0 and e % save_interval == 0:
+            save_weights()
 
 if __name__=="__main__":
     train()

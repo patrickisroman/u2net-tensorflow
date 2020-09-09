@@ -2,17 +2,34 @@ import os
 import pathlib
 import random
 import numpy as np
+import wget
+import zipfile
+import glob
+
+from config import *
 from PIL import Image 
 
-default_in_shape = (320, 320, 3)
-default_out_shape = (320, 320, 1)
-
-root_data_dir = pathlib.Path('data/datasets/')
-dataset_dir = root_data_dir.joinpath('DUTS-TR')
-image_dir = dataset_dir.joinpath('DUTS-TR-Image')
-mask_dir = dataset_dir.joinpath('DUTS-TR-Mask')
-
 cache = None
+
+# aborting wget leaves .tmp files everywhere >:(
+def clean_dataloader():
+    for tmp_file in glob.glob('*.tmp'):
+        os.remove(tmp_file)
+
+def download_duts_tr_dataset():
+    if dataset_dir.exists():
+        return
+
+    print('Downloading DUTS-TR Dataset from %s...' % dataset_url)
+    f = wget.download(dataset_url, out=str(root_data_dir.absolute()))
+    if not pathlib.Path(f).exists():
+        return
+
+    print('Extracting dataset...')
+    with zipfile.ZipFile(f, 'r') as zip_file:
+        zip_file.extractall(root_data_dir.absolute())
+
+    clean_dataloader()
 
 def get_image_mask_pair(img_name, in_resize=None, out_resize=None):
     img  = Image.open(image_dir.joinpath(img_name))
