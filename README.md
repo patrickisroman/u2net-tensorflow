@@ -4,31 +4,38 @@ A tensorflow implementation of the [U2-Net: Going Deeper with Nested U-Structure
 
 Based on the [PyTorch version](https://github.com/NathanUA/U-2-Net) by NathanUA
 
+## Setup 
+
 ```
 virtualenv venv
 source venv/bin/activate
-pip install tensorflow matplotlib opencv-python
+pip install tensorflow matplotlib opencv-python wget
 ```
 
 The `U2NET` class can be used to instatiate a modular instance of the U2-Net network
 ```python
+from models.u2net import U2NET
+
 u2net = U2NET()
 out = u2net(inp)
 ```
 
 ## Training
 
-Download the [DUTS-TR](http://saliencydetection.net/duts/#org3aad434) dataset and unzip into the `data` directory
+**Optional:** Download the [DUTS-TR](http://saliencydetection.net/duts/#org3aad434) dataset and unzip into the `data` directory to load the training set. If [train.py](train.py) does not detect the dataset is present when run, it will automatically try to download and setup the dataset before initiating training.
+
 ```
 wget http://saliencydetection.net/duts/download/DUTS-TR.zip
 unzip DUTS-TR.zip -d data
 ```
 
-Then start training
+Then to train, simply run:
 
 ```
 python train.py
 ```
+
+Weights are automatically saved every `save_interval` iterations to `weights/u2net.h5`. These can be overwritten by passing the appropriate arguments. See `python train.py -h` for args.
 
 ## Citation
 ```
