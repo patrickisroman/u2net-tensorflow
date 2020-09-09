@@ -17,7 +17,14 @@ out = u2net(inp)
 ```
 
 ## Training
-To train, place your dataset in the `data` folder, with a separate subdirectory for image and masks.
+
+Download the [DUTS-TR](http://saliencydetection.net/duts/#org3aad434) dataset and unzip into the `data` directory
+```
+wget http://saliencydetection.net/duts/download/DUTS-TR.zip
+unzip DUTS-TR.zip -d data
+```
+
+Then start training
 
 ```
 python train.py
