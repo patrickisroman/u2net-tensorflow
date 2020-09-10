@@ -5,7 +5,7 @@ A tensorflow implementation of the [U2-Net: Going Deeper with Nested U-Structure
 Based on the [PyTorch version](https://github.com/NathanUA/U-2-Net) by NathanUA
 
 ### Notebook
-If you just want to play with the model, I've setup a [Google Colab Notebook](https://colab.research.google.com/drive/1bGkgDBAmn7FUX_lws3OYF8Klw80ddMN7?usp=sharing) that lets you train the model on DUTS-TR, and it's v fun to watch the model learn to mask a skateboard it's never seen before while it trains. Training takes ~30-60 minutes to get decent results. Please let me know if you have any questions.
+If you just want to play with the model, I've setup a [Google Colab Notebook](https://colab.research.google.com/drive/1bGkgDBAmn7FUX_lws3OYF8Klw80ddMN7?usp=sharing) that lets you train the model on DUTS-TR, and it's v fun to watch the model learn to mask a skateboard it's never seen before while it trains. Training takes ~60 minutes to get to decent results. Please let me know if you have any questions.
 
 ![Network learning skateboard](examples/grid.png)
 

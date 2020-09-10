@@ -1,3 +1,5 @@
+# Arxiv: https://arxiv.org/pdf/2005.09007.pdf
+
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, Input, BatchNormalization, ReLU, MaxPool2D, UpSampling2D
