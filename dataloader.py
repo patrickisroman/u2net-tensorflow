@@ -41,12 +41,10 @@ def get_image_mask_pair(img_name, in_resize=None, out_resize=None):
     if out_resize:
         mask = mask.resize(out_resize[:2], Image.BICUBIC)
 
-    # the paper specifies the only data augmentation done is horizontal flipping.
-    # here is where you could go crazy
+    # the paper specifies the only augmentation done is horizontal flipping.
     if bool(random.getrandbits(1)):
         img = img.transpose(Image.FLIP_LEFT_RIGHT)
-        mask = img.transpose(Image.FLIP_LEFT_RIGHT)
-
+        mask = mask.transpose(Image.FLIP_LEFT_RIGHT)
 
     return (np.asarray(img, dtype=np.float32), np.expand_dims(np.asarray(mask, dtype=np.float32), -1))
 
