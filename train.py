@@ -105,6 +105,9 @@ def train():
         feed, out = load_training_batch(batch_size=batch_size)
         loss = model.train_on_batch(feed, out)
 
+        if e % 10 == 0:
+            print('[%05d] Loss: %.4f' % (e, loss))
+
         if save_interval and e > 0 and e % save_interval == 0:
             save_weights()
 
