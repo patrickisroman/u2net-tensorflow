@@ -338,6 +338,12 @@ class U2NET(keras.models.Model):
         self.upsample_5 = UpSampling2D(size=(2, 2), interpolation='bilinear')
         self.upsample_6 = UpSampling2D(size=(2, 2), interpolation='bilinear')
 
+        self.upsample_out_1 = UpSampling2D(size=(2, 2), interpolation='bilinear')
+        self.upsample_out_2 = UpSampling2D(size=(4, 4), interpolation='bilinear')
+        self.upsample_out_3 = UpSampling2D(size=(8, 8), interpolation='bilinear')
+        self.upsample_out_4 = UpSampling2D(size=(16, 16), interpolation='bilinear')
+        self.upsample_out_5 = UpSampling2D(size=(32, 32), interpolation='bilinear')
+
         self.outconv = Conv2D(out_ch, (1, 1), padding='same')
     
     def call(self, inputs):
@@ -378,29 +384,19 @@ class U2NET(keras.models.Model):
         d1 = self.side1(hx1d)
 
         d2 = self.side2(hx2d)
-        d2 = self.upsample_1(d2)
+        d2 = self.upsample_out_1(d2)
 
         d3 = self.side3(hx3d)
-        d3 = self.upsample_2(d3)
-        d3 = self.upsample_2(d3)
+        d3 = self.upsample_out_2(d3)
 
         d4 = self.side4(hx4d)
-        d4 = self.upsample_3(d4)
-        d4 = self.upsample_3(d4)
-        d4 = self.upsample_3(d4)
+        d4 = self.upsample_out_3(d4)
 
         d5 = self.side5(hx5d)
-        d5 = self.upsample_4(d5)
-        d5 = self.upsample_4(d5)
-        d5 = self.upsample_4(d5)
-        d5 = self.upsample_4(d5)
+        d5 = self.upsample_out_4(d5)
 
         d6 = self.side6(hx6)
-        d6 = self.upsample_5(d6)
-        d6 = self.upsample_5(d6)
-        d6 = self.upsample_5(d6)
-        d6 = self.upsample_5(d6)
-        d6 = self.upsample_5(d6)
+        d6 = self.upsample_out_5(d6)
 
         d0 = self.outconv(tf.concat([d1, d2, d3, d4, d5, d6], axis=3))
 

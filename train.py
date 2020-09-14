@@ -102,8 +102,12 @@ def train():
     # start training
     print('Starting training')
     for e in range(epochs):
-        feed, out = load_training_batch(batch_size=batch_size)
-        loss = model.train_on_batch(feed, out)
+        try:
+            feed, out = load_training_batch(batch_size=batch_size)
+            loss = model.train_on_batch(feed, out)
+        except KeyboardInterrupt:
+            save_weights()
+            return
 
         if e % 10 == 0:
             print('[%05d] Loss: %.4f' % (e, loss))
