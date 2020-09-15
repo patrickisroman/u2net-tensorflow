@@ -4,8 +4,25 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, Input, BatchNormalization, ReLU, MaxPool2D, UpSampling2D
 
+# Optimizer / Loss
+adam = keras.optimizers.Adam(learning_rate=.001, beta_1=.9, beta_2=.999, epsilon=1e-08)
+cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath='model.ckpt', save_weights_only=True, verbose=1)
+bce = keras.losses.BinaryCrossentropy()
+
+def bce_loss(y_true, y_pred):
+    y_p = tf.expand_dims(y_pred, axis=-1)
+    loss0 = bce(y_true, y_p[0])
+    loss1 = bce(y_true, y_p[1])
+    loss2 = bce(y_true, y_p[2])
+    loss3 = bce(y_true, y_p[3])
+    loss4 = bce(y_true, y_p[4])
+    loss5 = bce(y_true, y_p[5])
+    loss6 = bce(y_true, y_p[6])
+
+    return loss0 + loss1 + loss2 + loss3 + loss4 + loss5 + loss6
+
 class ConvBlock(keras.layers.Layer):
-    def __init__(self, in_ch=3, out_ch=3,dirate=1):
+    def __init__(self, out_ch=3,dirate=1):
         super(ConvBlock, self).__init__()
         self.conv = Conv2D(out_ch, (3, 3), strides=1, padding='same', dilation_rate=dirate)
         self.bn = BatchNormalization()
@@ -21,39 +38,39 @@ class ConvBlock(keras.layers.Layer):
         return x
 
 class RSU7(keras.layers.Layer):
-    def __init__(self, in_ch=3, mid_ch=12, out_ch=3):
+    def __init__(self, mid_ch=12, out_ch=3):
         super(RSU7, self).__init__()
-        self.conv_b0 = ConvBlock(in_ch, out_ch, dirate=1)
+        self.conv_b0 = ConvBlock(out_ch, dirate=1)
 
-        self.conv_b1 = ConvBlock(out_ch, mid_ch, dirate=1)
+        self.conv_b1 = ConvBlock(mid_ch, dirate=1)
         self.pool1   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b2 = ConvBlock(mid_ch, mid_ch, dirate=1)
+        self.conv_b2 = ConvBlock(mid_ch, dirate=1)
         self.pool2   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b3 = ConvBlock(mid_ch, mid_ch, dirate=1)
+        self.conv_b3 = ConvBlock(mid_ch, dirate=1)
         self.pool3   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b4 = ConvBlock(mid_ch, mid_ch, dirate=1)
+        self.conv_b4 = ConvBlock(mid_ch, dirate=1)
         self.pool4   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b5 = ConvBlock(mid_ch, mid_ch, dirate=1)
+        self.conv_b5 = ConvBlock(mid_ch, dirate=1)
         self.pool5   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b6 = ConvBlock(mid_ch, mid_ch, dirate=1)
-        self.conv_b7 = ConvBlock(mid_ch, mid_ch, dirate=2)
+        self.conv_b6 = ConvBlock(mid_ch, dirate=1)
+        self.conv_b7 = ConvBlock(mid_ch, dirate=2)
 
-        self.conv_b6_d = ConvBlock(mid_ch*2, mid_ch, dirate=1)
+        self.conv_b6_d  = ConvBlock(mid_ch, dirate=1)
         self.upsample_1 = UpSampling2D(size=(2, 2), interpolation='bilinear')
-        self.conv_b5_d = ConvBlock(mid_ch*2, mid_ch, dirate=1)
+        self.conv_b5_d  = ConvBlock(mid_ch, dirate=1)
         self.upsample_2 = UpSampling2D(size=(2, 2), interpolation='bilinear')
-        self.conv_b4_d = ConvBlock(mid_ch*2, mid_ch, dirate=1)
+        self.conv_b4_d  = ConvBlock(mid_ch, dirate=1)
         self.upsample_3 = UpSampling2D(size=(2, 2), interpolation='bilinear')
-        self.conv_b3_d = ConvBlock(mid_ch*2, mid_ch, dirate=1)
+        self.conv_b3_d  = ConvBlock(mid_ch, dirate=1)
         self.upsample_4 = UpSampling2D(size=(2, 2), interpolation='bilinear')
-        self.conv_b2_d = ConvBlock(mid_ch*2, mid_ch, dirate=1)
+        self.conv_b2_d  = ConvBlock(mid_ch, dirate=1)
         self.upsample_5 = UpSampling2D(size=(2, 2), interpolation='bilinear')
-        self.conv_b1_d = ConvBlock(mid_ch*2, out_ch, dirate=1)
+        self.conv_b1_d  = ConvBlock(out_ch, dirate=1)
         self.upsample_6 = UpSampling2D(size=(2, 2), interpolation='bilinear')
     
     def call(self, inputs):
@@ -99,36 +116,36 @@ class RSU7(keras.layers.Layer):
         return hx1d + hxin
 
 class RSU6(keras.layers.Layer):
-    def __init__(self, in_ch=3, mid_ch=12, out_ch=3):
+    def __init__(self, mid_ch=12, out_ch=3):
         super(RSU6, self).__init__()
-        self.conv_b0 = ConvBlock(in_ch, out_ch, dirate=1)
+        self.conv_b0 = ConvBlock(out_ch, dirate=1)
 
-        self.conv_b1 = ConvBlock(out_ch, mid_ch, dirate=1)
+        self.conv_b1 = ConvBlock(mid_ch, dirate=1)
         self.pool1   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b2 = ConvBlock(mid_ch, mid_ch, dirate=1)
+        self.conv_b2 = ConvBlock(mid_ch, dirate=1)
         self.pool2   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b3 = ConvBlock(mid_ch, mid_ch, dirate=1)
+        self.conv_b3 = ConvBlock(mid_ch, dirate=1)
         self.pool3   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b4 = ConvBlock(mid_ch, mid_ch, dirate=1)
+        self.conv_b4 = ConvBlock(mid_ch, dirate=1)
         self.pool4   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b5 = ConvBlock(mid_ch, mid_ch, dirate=1)
+        self.conv_b5 = ConvBlock(mid_ch, dirate=1)
         self.pool5   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b6 = ConvBlock(mid_ch, mid_ch, dirate=2)
+        self.conv_b6 = ConvBlock(mid_ch, dirate=2)
 
-        self.conv_b5_d = ConvBlock(mid_ch*2, mid_ch, dirate=1)
+        self.conv_b5_d = ConvBlock(mid_ch, dirate=1)
         self.upsample_1 = UpSampling2D(size=(2, 2), interpolation='bilinear')
-        self.conv_b4_d = ConvBlock(mid_ch*2, mid_ch, dirate=1)
+        self.conv_b4_d = ConvBlock(mid_ch, dirate=1)
         self.upsample_2 = UpSampling2D(size=(2, 2), interpolation='bilinear')
-        self.conv_b3_d = ConvBlock(mid_ch*2, mid_ch, dirate=1)
+        self.conv_b3_d = ConvBlock(mid_ch, dirate=1)
         self.upsample_3 = UpSampling2D(size=(2, 2), interpolation='bilinear')
-        self.conv_b2_d = ConvBlock(mid_ch*2, mid_ch, dirate=1)
+        self.conv_b2_d = ConvBlock(mid_ch, dirate=1)
         self.upsample_4 = UpSampling2D(size=(2, 2), interpolation='bilinear')
-        self.conv_b1_d = ConvBlock(mid_ch*2, out_ch, dirate=1)
+        self.conv_b1_d = ConvBlock(out_ch, dirate=1)
         self.upsample_5 = UpSampling2D(size=(2, 2), interpolation='bilinear')
     
     def call(self, inputs):
@@ -168,31 +185,31 @@ class RSU6(keras.layers.Layer):
         return hx1d + hxin
 
 class RSU5(keras.layers.Layer):
-    def __init__(self, in_ch=3, mid_ch=12, out_ch=3):
+    def __init__(self, mid_ch=12, out_ch=3):
         super(RSU5, self).__init__()
-        self.conv_b0 = ConvBlock(in_ch, out_ch, dirate=1)
+        self.conv_b0 = ConvBlock(out_ch, dirate=1)
 
-        self.conv_b1 = ConvBlock(out_ch, mid_ch, dirate=1)
+        self.conv_b1 = ConvBlock(mid_ch, dirate=1)
         self.pool1   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b2 = ConvBlock(mid_ch, mid_ch, dirate=1)
+        self.conv_b2 = ConvBlock(mid_ch, dirate=1)
         self.pool2   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b3 = ConvBlock(mid_ch, mid_ch, dirate=1)
+        self.conv_b3 = ConvBlock(mid_ch, dirate=1)
         self.pool3   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b4 = ConvBlock(mid_ch, mid_ch, dirate=1)
+        self.conv_b4 = ConvBlock(mid_ch, dirate=1)
         self.pool4   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b5 = ConvBlock(mid_ch, mid_ch, dirate=2)
+        self.conv_b5 = ConvBlock(mid_ch, dirate=2)
 
-        self.conv_b4_d = ConvBlock(mid_ch*2, mid_ch, dirate=1)
+        self.conv_b4_d = ConvBlock(mid_ch, dirate=1)
         self.upsample_1 = UpSampling2D(size=(2, 2), interpolation='bilinear')
-        self.conv_b3_d = ConvBlock(mid_ch*2, mid_ch, dirate=1)
+        self.conv_b3_d = ConvBlock(mid_ch, dirate=1)
         self.upsample_2 = UpSampling2D(size=(2, 2), interpolation='bilinear')
-        self.conv_b2_d = ConvBlock(mid_ch*2, mid_ch, dirate=1)
+        self.conv_b2_d = ConvBlock(mid_ch, dirate=1)
         self.upsample_3 = UpSampling2D(size=(2, 2), interpolation='bilinear')
-        self.conv_b1_d = ConvBlock(mid_ch*2, out_ch, dirate=1)
+        self.conv_b1_d = ConvBlock(out_ch, dirate=1)
         self.upsample_4 = UpSampling2D(size=(2, 2), interpolation='bilinear')
     
     def call(self, inputs):
@@ -226,26 +243,26 @@ class RSU5(keras.layers.Layer):
         return hx1d + hxin
 
 class RSU4(keras.layers.Layer):
-    def __init__(self, in_ch=3, mid_ch=12, out_ch=3):
+    def __init__(self, mid_ch=12, out_ch=3):
         super(RSU4, self).__init__()
-        self.conv_b0 = ConvBlock(in_ch, out_ch, dirate=1)
+        self.conv_b0 = ConvBlock(out_ch, dirate=1)
 
-        self.conv_b1 = ConvBlock(out_ch, mid_ch, dirate=1)
+        self.conv_b1 = ConvBlock(mid_ch, dirate=1)
         self.pool1   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b2 = ConvBlock(mid_ch, mid_ch, dirate=1)
+        self.conv_b2 = ConvBlock(mid_ch, dirate=1)
         self.pool2   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b3 = ConvBlock(mid_ch, mid_ch, dirate=1)
+        self.conv_b3 = ConvBlock(mid_ch, dirate=1)
         self.pool3   = MaxPool2D(2, strides=(2, 2))
 
-        self.conv_b4 = ConvBlock(mid_ch, mid_ch, dirate=2)
+        self.conv_b4 = ConvBlock(mid_ch, dirate=2)
 
-        self.conv_b3_d = ConvBlock(mid_ch*2, mid_ch, dirate=1)
+        self.conv_b3_d = ConvBlock(mid_ch, dirate=1)
         self.upsample_1 = UpSampling2D(size=(2, 2), interpolation='bilinear')
-        self.conv_b2_d = ConvBlock(mid_ch*2, mid_ch, dirate=1)
+        self.conv_b2_d = ConvBlock(mid_ch, dirate=1)
         self.upsample_2 = UpSampling2D(size=(2, 2), interpolation='bilinear')
-        self.conv_b1_d = ConvBlock(mid_ch*2, out_ch, dirate=1)
+        self.conv_b1_d = ConvBlock(out_ch, dirate=1)
         self.upsample_3 = UpSampling2D(size=(2, 2), interpolation='bilinear')
     
     def call(self, inputs):
@@ -273,16 +290,16 @@ class RSU4(keras.layers.Layer):
         return hx1d + hxin
 
 class RSU4F(keras.layers.Layer):
-    def __init__(self, in_ch=3, mid_ch=12, out_ch=3):
+    def __init__(self, mid_ch=12, out_ch=3):
         super(RSU4F, self).__init__()
-        self.conv_b0 = ConvBlock(in_ch, out_ch, dirate=1)
-        self.conv_b1 = ConvBlock(out_ch, mid_ch, dirate=1)
-        self.conv_b2 = ConvBlock(mid_ch, mid_ch, dirate=2)
-        self.conv_b3 = ConvBlock(mid_ch, mid_ch, dirate=4)
-        self.conv_b4 = ConvBlock(mid_ch, mid_ch, dirate=8)
-        self.conv_b3_d = ConvBlock(mid_ch*2, mid_ch, dirate=4)
-        self.conv_b2_d = ConvBlock(mid_ch*2, mid_ch, dirate=2)
-        self.conv_b1_d = ConvBlock(mid_ch*2, out_ch, dirate=1)
+        self.conv_b0 = ConvBlock(out_ch, dirate=1)
+        self.conv_b1 = ConvBlock(mid_ch, dirate=1)
+        self.conv_b2 = ConvBlock(mid_ch, dirate=2)
+        self.conv_b3 = ConvBlock(mid_ch, dirate=4)
+        self.conv_b4 = ConvBlock(mid_ch, dirate=8)
+        self.conv_b3_d = ConvBlock(mid_ch, dirate=4)
+        self.conv_b2_d = ConvBlock(mid_ch, dirate=2)
+        self.conv_b1_d = ConvBlock(out_ch, dirate=1)
     
     def call(self, inputs):
         hx = inputs
@@ -301,28 +318,28 @@ class U2NET(keras.models.Model):
     def __init__(self, in_ch=3, out_ch=1):
         super(U2NET, self).__init__()
         
-        self.stage1 = RSU7(in_ch, 32, 64)
+        self.stage1 = RSU7(32, 64)
         self.pool12 = MaxPool2D((2, 2), 2)
 
-        self.stage2 = RSU6(64, 32, 128)
+        self.stage2 = RSU6(32, 128)
         self.pool23 = MaxPool2D((2, 2), 2)
 
-        self.stage3 = RSU5(128, 64, 256)
+        self.stage3 = RSU5(64, 256)
         self.pool34 = MaxPool2D((2, 2), 2)
 
-        self.stage4 = RSU4(256, 128, 512)
+        self.stage4 = RSU4(128, 512)
         self.pool45 = MaxPool2D((2, 2), 2)
 
-        self.stage5 = RSU4F(512, 256, 512)
+        self.stage5 = RSU4F(256, 512)
         self.pool56 = MaxPool2D((2, 2), 2)
 
-        self.stage6 = RSU4F(512, 256, 512)
+        self.stage6 = RSU4F(256, 512)
 
-        self.stage5d = RSU4F(1024, 256, 512)
-        self.stage4d = RSU4(1024, 128, 256)
-        self.stage3d = RSU5(512, 64, 128)
-        self.stage2d = RSU6(256, 32, 64)
-        self.stage1d = RSU7(128, 16, 64)
+        self.stage5d = RSU4F(256, 512)
+        self.stage4d = RSU4(128, 256)
+        self.stage3d = RSU5(64, 128)
+        self.stage2d = RSU6(32, 64)
+        self.stage1d = RSU7(16, 64)
 
         self.side1 = Conv2D(out_ch, (3, 3), padding='same')
         self.side2 = Conv2D(out_ch, (3, 3), padding='same')

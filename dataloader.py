@@ -31,6 +31,13 @@ def download_duts_tr_dataset():
 
     clean_dataloader()
 
+def format_input(input_image):
+    assert(input_image.size == default_in_shape[:2] or input_image.shape == default_in_shape)
+    inp = np.array(input_image)
+    if inp.shape[-1] == 4:
+        input_image = input_image.convert('RGB')
+    return np.expand_dims(np.array(input_image)/255., 0)
+
 def get_image_mask_pair(img_name, in_resize=None, out_resize=None):
     img  = Image.open(image_dir.joinpath(img_name))
     mask = Image.open(mask_dir.joinpath(img_name.replace('jpg', 'png')))
@@ -60,3 +67,14 @@ def load_training_batch(batch_size=12, in_shape=default_in_shape, out_shape=defa
     tensor_out = np.stack([i[1]/255. for i in image_list])
     
     return (tensor_in, tensor_out)
+
+def load_test_image(image_path, in_shape=default_in_shape, out_shape=default_out_shape):
+    if not os.path.exists(image_path):
+        return None
+    
+    img = Image.open(image_path)
+    original_image_size = img.size
+    img = img.resize(in_shape[:2], Image.BICUBIC)
+    img = format_input(img)
+
+    return (img, original_image_size)
