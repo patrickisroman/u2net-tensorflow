@@ -38,7 +38,7 @@ Weights are automatically saved every `save_interval` iterations to `weights/u2n
 
 ## Evaluation
 
-Use `eval.py` to evaluate the model on images:
+Use [eval.py](eval.py)  to evaluate the model on images:
 
 ```bash
 python eval.py --weights=weights/u2net.h5 --image=examples/skateboard.jpg
