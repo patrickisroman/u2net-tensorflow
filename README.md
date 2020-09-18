@@ -5,7 +5,7 @@ A tensorflow implementation of the [U2-Net: Going Deeper with Nested U-Structure
 Based on the [PyTorch version](https://github.com/NathanUA/U-2-Net) by NathanUA, PDillis, vincentzhang, and chenyangh
 
 ## Notebook
-If you just want to play with the model, I've setup a [Google Colab Notebook](https://colab.research.google.com/drive/1bGkgDBAmn7FUX_lws3OYF8Klw80ddMN7?usp=sharing) that lets you train the model on DUTS-TR, and it's v fun to watch the model learn to mask a skateboard it's never seen before while it trains. Training takes ~60 minutes to get to decent results, but you should train for several hours to use it for testing. Please let me know if you have any questions.
+If you just want to play with the model, I've setup a [Google Colab Notebook](https://colab.research.google.com/drive/1bGkgDBAmn7FUX_lws3OYF8Klw80ddMN7?usp=sharing) that lets you train the model on DUTS-TR, and it's fun to watch the model learn to mask a skateboard it's never seen before while it trains. Training takes ~60 minutes to get to noticeable results, but you should train for several hours to use it for testing. Please let me know if you have any questions.
 
 ![Network learning skateboard](examples/grid.png)
 
@@ -17,14 +17,6 @@ source venv/bin/activate
 pip install tensorflow matplotlib opencv-python wget
 ```
 
-The `U2NET` class can be used to instatiate a modular instance of the U2-Net network
-```python
-from models.u2net import U2NET
-
-u2net = U2NET()
-out = u2net(inp)
-```
-
 ## Training
 
 **OPTIONAL:** Download the [DUTS-TR](http://saliencydetection.net/duts/#org3aad434) dataset and unzip into the `data` directory to load the training set:
@@ -34,7 +26,7 @@ wget http://saliencydetection.net/duts/download/DUTS-TR.zip
 unzip DUTS-TR.zip -d data
 ```
 
-If [train.py](train.py) does not detect the dataset is present when run, it will automatically try to download and setup the dataset before initiating training.
+If [train.py](train.py) does not detect the dataset is present when run, it will automatically try to download and setup the dataset before initiating training. If you have a custom dataset, you can update `dataset_dir`, `image_dir`, and `mask_dir` in [config.py](config.py). Images will be rescaled 
 
 To begin training, simply run:
 
@@ -46,20 +38,21 @@ Weights are automatically saved every `save_interval` iterations to `weights/u2n
 
 ## Evaluation
 
-To evaluate the model on images:
+Use `eval.py` to evaluate the model on images:
 
 ```bash
-python eval.py [--image=image_file] [--images=image_directory]
+python eval.py --weights=weights/u2net.h5 --image=examples/skateboard.jpg
 ```
 
-## Citation
-```
-@InProceedings{Qin_2020_PR,
-title = {U2-Net: Going Deeper with Nested U-Structure for Salient Object Detection},
-author = {Qin, Xuebin and Zhang, Zichen and Huang, Chenyang and Dehghan, Masood and Zaiane, Osmar and Jagersand, Martin},
-journal = {Pattern Recognition},
-volume = {106},
-pages = {107404},
-year = {2020}
-}
+By default, the output images are saved in the `out` subdirectory
+
+## Custom Usage
+
+The `U2NET` class can be used to instatiate a modular instance of the U2-Net network
+
+```python
+from model.u2net import U2NET
+
+u2net = U2NET()
+out = u2net(inp)
 ```

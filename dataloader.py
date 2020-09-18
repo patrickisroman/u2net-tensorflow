@@ -38,7 +38,7 @@ def format_input(input_image):
         input_image = input_image.convert('RGB')
     return np.expand_dims(np.array(input_image)/255., 0)
 
-def get_image_mask_pair(img_name, in_resize=None, out_resize=None):
+def get_image_mask_pair(img_name, in_resize=None, out_resize=None, augment=True):
     in_img = image_dir.joinpath(img_name)
     out_img = mask_dir.joinpath(img_name.replace('jpg', 'png'))
 
@@ -55,7 +55,7 @@ def get_image_mask_pair(img_name, in_resize=None, out_resize=None):
         mask = mask.resize(out_resize[:2], Image.BICUBIC)
 
     # the paper specifies the only augmentation done is horizontal flipping.
-    if bool(random.getrandbits(1)):
+    if augment and bool(random.getrandbits(1)):
         img = img.transpose(Image.FLIP_LEFT_RIGHT)
         mask = mask.transpose(Image.FLIP_LEFT_RIGHT)
 
@@ -73,14 +73,3 @@ def load_training_batch(batch_size=12, in_shape=default_in_shape, out_shape=defa
     tensor_out = np.stack([i[1]/255. for i in image_list])
     
     return (tensor_in, tensor_out)
-
-def load_test_image(image_path, in_shape=default_in_shape, out_shape=default_out_shape):
-    if not os.path.exists(image_path):
-        return None
-    
-    img = Image.open(image_path)
-    original_image_size = img.size
-    img = img.resize(in_shape[:2], Image.BICUBIC)
-    img = format_input(img)
-
-    return (img, original_image_size)

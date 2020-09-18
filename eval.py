@@ -25,22 +25,22 @@ parser.add_argument('--output', default=None, type=str,
 parser.add_argument('--weights', default=None, type=str,
                     help='The weights file of a trained network')
 parser.add_argument('--merged', default=False, type=str2bool,
-                    help='Display image and output mask side-by-side in each output image')
+                    help='Display input image and output mask side-by-side in each output image')
 parser.add_argument('--apply_mask', default=False, type=str2bool,
-                    help='Apply the mask to the input image and save the product.')
+                    help='Apply the mask to the input image and show in place of the mask')
 args = parser.parse_args()
 
 if args.output:
     output_dir = pathlib.Path(args.output)
 
 def apply_mask(img, mask):
-    return np.multiply(img[0], np.tile(mask[0][0], [1, 1, 3]))
+    return np.multiply(img, mask)
 
 def main():
     input_images = []
 
     if args.image:
-        assert os.path.exists(args.image)
+        assert os.path.exists(args.image), "Input image file must exist: %s" % args.image
         input_images.append(args.image)
     
     if args.images:
@@ -64,35 +64,36 @@ def main():
     model.compile(optimizer=adam, loss=bce_loss, metrics=None)
 
     if args.weights:
-        assert(os.path.exists(args.weights))
+        assert os.path.exists(args.weights), 'Model weights path must exist: %s' % args.weights
         model.load_weights(args.weights)
 
+    # evaluate each image
     for img in input_images:
-        input_image, size = load_test_image(img)
-        mask = model(input_image)
-
-        plt.margins(0, 0)
-        plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, hspace = 0, wspace = 0)
-        if args.merged:
-            f, a = plt.subplots(1,2)
-            f.subplots_adjust(hspace=0, wspace=0)
-            a[0].set_axis_off()
-            a[1].set_axis_off()
-
-            out_mask = np.tile(mask[0][0], [1, 1, 3])
-            a[0].imshow(out_mask, cmap='gray', vmin=0, vmax=1)
-            a[1].imshow(apply_mask(input_image, mask) if args.apply_mask else input_image[0])
+        image = Image.open(img).convert('RGB')
+        input_image = image
+        if image.size != default_in_shape:
+            input_image = image.resize(default_in_shape[:2], Image.BICUBIC)
+        
+        input_tensor = format_input(input_image)
+        fused_mask_tensor = model(input_tensor, Image.BICUBIC)[0][0]
+        output_mask = np.asarray(fused_mask_tensor)
+        
+        if image.size != default_in_shape:
+            output_mask = cv2.resize(output_mask, dsize=image.size)
+        
+        output_mask = np.tile(np.expand_dims(output_mask, axis=2), [1, 1, 3])
+        output_image = np.expand_dims(np.array(image)/255., 0)[0]
+        if args.apply_mask:
+            output_image = apply_mask(output_image, output_mask)
         else:
-            f, a = plt.gcf(), plt.gca()
-            a.set_axis_off()
-            f.subplots_adjust(hspace=0, wspace=0)
-            if args.apply_mask:
-                a.imshow(apply_mask(input_image, mask))
-            else:
-                a.imshow(np.tile(mask[0][0], [1, 1, 3]), cmap='gray', vmin=0, vmax=1)
+            output_image = output_mask
 
-        o = output_dir.joinpath(pathlib.Path(img).name)
-        f.savefig(o, transparent=True, bbox_inches='tight', pad_inches=0)
+        if args.merged:
+            output_image = np.concatenate((output_mask, output_image), axis=1)
+
+        output_image = cv2.cvtColor(output_image.astype('float32'), cv2.COLOR_BGR2RGB) 
+        output_location = output_dir.joinpath(pathlib.Path(img).name)
+        cv2.imwrite(str(output_location), output_image*255.)
         
 if __name__=='__main__':
     main()
