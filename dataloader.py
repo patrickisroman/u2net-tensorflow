@@ -39,8 +39,14 @@ def format_input(input_image):
     return np.expand_dims(np.array(input_image)/255., 0)
 
 def get_image_mask_pair(img_name, in_resize=None, out_resize=None):
+    in_img = image_dir.joinpath(img_name)
+    out_img = mask_dir.joinpath(img_name.replace('jpg', 'png'))
+
+    if not in_img.exists() or not out_img.exists():
+        return None
+
     img  = Image.open(image_dir.joinpath(img_name))
-    mask = Image.open(mask_dir.joinpath(img_name.replace('jpg', 'png')))
+    mask = Image.open(out_img)
 
     if in_resize:
         img = img.resize(in_resize[:2], Image.BICUBIC)

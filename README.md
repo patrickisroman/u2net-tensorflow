@@ -27,20 +27,30 @@ out = u2net(inp)
 
 ## Training
 
-**Optional:** Download the [DUTS-TR](http://saliencydetection.net/duts/#org3aad434) dataset and unzip into the `data` directory to load the training set. If [train.py](train.py) does not detect the dataset is present when run, it will automatically try to download and setup the dataset before initiating training.
+**OPTIONAL:** Download the [DUTS-TR](http://saliencydetection.net/duts/#org3aad434) dataset and unzip into the `data` directory to load the training set:
 
 ```bash
 wget http://saliencydetection.net/duts/download/DUTS-TR.zip
 unzip DUTS-TR.zip -d data
 ```
 
-Then to train, simply run:
+If [train.py](train.py) does not detect the dataset is present when run, it will automatically try to download and setup the dataset before initiating training.
+
+To begin training, simply run:
 
 ```bash
 python train.py
 ```
 
 Weights are automatically saved every `save_interval` iterations to `weights/u2net.h5`. These can be overwritten by passing the appropriate arguments. See `python train.py -h` for args.
+
+## Evaluation
+
+To evaluate the model on images:
+
+```bash
+python eval.py [--image=image_file] [--images=image_directory]
+```
 
 ## Citation
 ```

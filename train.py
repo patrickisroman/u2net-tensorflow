@@ -38,6 +38,9 @@ if args.save_interval:
 if args.weights_file:
     weights_file = weight_dir.joinpath(args.weights_file)
 
+if not weight_dir.exists():
+    weight_dir.mkdir()
+
 if args.resume:
     resume = args.resume
 
@@ -46,15 +49,15 @@ img = cv2.imread('examples/skateboard.jpg')
 img = cv2.resize(img, dsize=default_in_shape[:2], interpolation=cv2.INTER_CUBIC)
 inp = np.expand_dims(img, axis=0)
 
-# Optimizer / Loss
+# Overwrite the default optimizer
 adam = keras.optimizers.Adam(learning_rate=learning_rate, beta_1=.9, beta_2=.999, epsilon=1e-08)
-cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath='model.ckpt', save_weights_only=True, verbose=1)
+cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=weights_file, save_weights_only=True, verbose=1)
 
 def train():
     inputs = keras.Input(shape=default_in_shape)
-    net    = U2NET()
-    out    = net(inputs)
-    model  = keras.Model(inputs=inputs, outputs=out, name='u2netmodel')
+    net = U2NET()
+    out = net(inputs)
+    model = keras.Model(inputs=inputs, outputs=out, name='u2netmodel')
     model.compile(optimizer=adam, loss=bce_loss, metrics=None)
     model.summary()
 
@@ -67,8 +70,8 @@ def train():
 
     # helper function to save state of model
     def save_weights():
-        print('Saving state of model to %s' % model_file)
-        model.save_weights(str(model_file))
+        print('Saving state of model to %s' % weights_file)
+        model.save_weights(str(weights_file))
     
     # signal handler for early abortion to autosave model state
     def autosave(sig, frame):
@@ -88,6 +91,8 @@ def train():
         except KeyboardInterrupt:
             save_weights()
             return
+        except ValueError:
+            continue
 
         if e % 10 == 0:
             print('[%05d] Loss: %.4f' % (e, loss))
