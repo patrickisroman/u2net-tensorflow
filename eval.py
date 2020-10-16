@@ -91,9 +91,9 @@ def main():
         if args.merged:
             output_image = np.concatenate((output_mask, output_image), axis=1)
 
-        output_image = cv2.cvtColor(output_image.astype('float32'), cv2.COLOR_BGR2RGB) 
+        output_image = cv2.cvtColor(output_image.astype('float32'), cv2.COLOR_BGR2RGB) * 255.
         output_location = output_dir.joinpath(pathlib.Path(img).name)
-        cv2.imwrite(str(output_location), output_image*255.)
+        cv2.imwrite(str(output_location), output_image)
         
 if __name__=='__main__':
     main()

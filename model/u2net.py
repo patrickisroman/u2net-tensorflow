@@ -315,7 +315,7 @@ class RSU4F(keras.layers.Layer):
         return hx1d + hxin
 
 class U2NET(keras.models.Model):
-    def __init__(self, in_ch=3, out_ch=1):
+    def __init__(self, out_ch=1):
         super(U2NET, self).__init__()
         
         self.stage1 = RSU7(32, 64)
@@ -355,11 +355,11 @@ class U2NET(keras.models.Model):
         self.upsample_5 = UpSampling2D(size=(2, 2), interpolation='bilinear')
         self.upsample_6 = UpSampling2D(size=(2, 2), interpolation='bilinear')
 
-        self.upsample_out_1 = UpSampling2D(size=(2, 2), interpolation='bilinear')
-        self.upsample_out_2 = UpSampling2D(size=(4, 4), interpolation='bilinear')
-        self.upsample_out_3 = UpSampling2D(size=(8, 8), interpolation='bilinear')
-        self.upsample_out_4 = UpSampling2D(size=(16, 16), interpolation='bilinear')
-        self.upsample_out_5 = UpSampling2D(size=(32, 32), interpolation='bilinear')
+        self.upsample_out_2 = UpSampling2D(size=(2, 2), interpolation='bilinear')
+        self.upsample_out_3 = UpSampling2D(size=(4, 4), interpolation='bilinear')
+        self.upsample_out_4 = UpSampling2D(size=(8, 8), interpolation='bilinear')
+        self.upsample_out_5 = UpSampling2D(size=(16, 16), interpolation='bilinear')
+        self.upsample_out_6 = UpSampling2D(size=(32, 32), interpolation='bilinear')
 
         self.outconv = Conv2D(out_ch, (1, 1), padding='same')
     
@@ -383,39 +383,126 @@ class U2NET(keras.models.Model):
 
         hx6 = self.stage6(hx)
         hx6up = self.upsample_1(hx6)
+        side6 = self.upsample_out_6(self.side6(hx6))
 
         hx5d = self.stage5d(tf.concat([hx6up, hx5], axis=3))
         hx5dup = self.upsample_2(hx5d)
+        side5 = self.upsample_out_5(self.side5(hx5d))
 
         hx4d = self.stage4d(tf.concat([hx5dup, hx4], axis=3))
         hx4dup = self.upsample_3(hx4d)
+        side4 = self.upsample_out_4(self.side4(hx4d))
 
         hx3d = self.stage3d(tf.concat([hx4dup, hx3], axis=3))
         hx3dup = self.upsample_4(hx3d)
+        side3 = self.upsample_out_3(self.side3(hx3d))
 
         hx2d = self.stage2d(tf.concat([hx3dup, hx2], axis=3))
         hx2dup = self.upsample_5(hx2d)
+        side2 = self.upsample_out_2(self.side2(hx2d))
 
         hx1d = self.stage1d(tf.concat([hx2dup, hx1], axis=3))
+        side1 = self.side1(hx1d)
 
-        d1 = self.side1(hx1d)
-
-        d2 = self.side2(hx2d)
-        d2 = self.upsample_out_1(d2)
-
-        d3 = self.side3(hx3d)
-        d3 = self.upsample_out_2(d3)
-
-        d4 = self.side4(hx4d)
-        d4 = self.upsample_out_3(d4)
-
-        d5 = self.side5(hx5d)
-        d5 = self.upsample_out_4(d5)
-
-        d6 = self.side6(hx6)
-        d6 = self.upsample_out_5(d6)
-
-        d0 = self.outconv(tf.concat([d1, d2, d3, d4, d5, d6], axis=3))
+        fused_output = self.outconv(tf.concat([side1, side2, side3, side4, side5, side6], axis=3))
 
         sig = keras.activations.sigmoid
-        return tf.stack([sig(d0), sig(d1), sig(d2), sig(d3), sig(d4), sig(d5), sig(d6)])
+        return tf.stack([sig(fused_output), sig(side1), sig(side2), sig(side3), sig(side4), sig(side5), sig(side6)])
+
+class U2NETP(keras.models.Model):
+    def __init__(self, out_ch=1):
+        super(U2NETP, self).__init__()
+
+        self.stage1 = RSU7(16, 64)
+        self.pool12 = MaxPool2D((2, 2), 2)
+
+        self.stage2 = RSU6(16, 64)
+        self.pool23 = MaxPool2D((2, 2), 2)
+
+        self.stage3 = RSU5(16, 64)
+        self.pool34 = MaxPool2D((2, 2), 2)
+
+        self.stage4 = RSU4(16, 64)
+        self.pool45 = MaxPool2D((2, 2), 2)
+
+        self.stage5 = RSU4F(16, 64)
+        self.pool56 = MaxPool2D((2, 2), 2)
+
+        self.stage6 = RSU4F(16, 64)
+        self.side6 = Conv2D(out_ch, (3, 3), padding='same')
+
+        self.stage5d = RSU4F(16, 64)
+        self.side5 = Conv2D(out_ch, (3, 3), padding='same')
+
+        self.stage4d = RSU4(16, 64)
+        self.side4 = Conv2D(out_ch, (3, 3), padding='same')
+
+        self.stage3d = RSU5(16, 64)
+        self.side3 = Conv2D(out_ch, (3, 3), padding='same')
+
+        self.stage2d = RSU6(16, 64)
+        self.side2 = Conv2D(out_ch, (3, 3), padding='same')
+
+        self.stage1d = RSU7(16, 64)
+        self.side1 = Conv2D(out_ch, (3, 3), padding='same')
+
+        self.upsample_1 = UpSampling2D(size=(2, 2), interpolation='bilinear')
+        self.upsample_2 = UpSampling2D(size=(2, 2), interpolation='bilinear')
+        self.upsample_3 = UpSampling2D(size=(2, 2), interpolation='bilinear')
+        self.upsample_4 = UpSampling2D(size=(2, 2), interpolation='bilinear')
+        self.upsample_5 = UpSampling2D(size=(2, 2), interpolation='bilinear')
+        self.upsample_6 = UpSampling2D(size=(2, 2), interpolation='bilinear')
+
+        self.upsample_out_2 = UpSampling2D(size=(2, 2), interpolation='bilinear')
+        self.upsample_out_3 = UpSampling2D(size=(4, 4), interpolation='bilinear')
+        self.upsample_out_4 = UpSampling2D(size=(8, 8), interpolation='bilinear')
+        self.upsample_out_5 = UpSampling2D(size=(16, 16), interpolation='bilinear')
+        self.upsample_out_6 = UpSampling2D(size=(32, 32), interpolation='bilinear')
+
+        self.outconv = Conv2D(out_ch, 1)
+    
+    def call(self, inputs):
+        hx = inputs
+        hx1 = self.stage1(hx)
+        hx = self.pool12(hx1)
+
+        hx2 = self.stage2(hx)
+        hx = self.pool23(hx2)
+
+        hx3 = self.stage3(hx)
+        hx = self.pool34(hx3)
+
+        hx4 = self.stage4(hx)
+        hx = self.pool45(hx4)
+
+        hx5 = self.stage5(hx)
+        hx = self.pool56(hx5)
+
+        hx6 = self.stage6(hx)
+        hx6up = self.upsample_6(hx6)
+        side6 = self.upsample_out_6(self.side6(hx6))
+
+        hx5d = self.stage5d(tf.concat([hx6up, hx5], axis=3))
+        hx5dup = self.upsample_5(hx5d)
+        side5 = self.upsample_out_5(self.side5(hx5d))
+
+        hx4d = self.stage4d(tf.concat([hx5dup, hx4], axis=3))
+        hx4dup = self.upsample_4(hx4d)
+        side4 = self.upsample_out_4(self.side4(hx4d))
+
+        hx3d = self.stage3d(tf.concat([hx4dup, hx3], axis=3))
+        hx3dup = self.upsample_3(hx3d)
+        side3 = self.upsample_out_3(self.side3(hx3d))
+
+        hx2d = self.stage2d(tf.concat([hx3dup, hx2], axis=3))
+        hx2dup = self.upsample_2(hx2d)
+        side2 = self.upsample_out_2(self.side2(hx2d))
+
+        hx1d = self.stage1d(tf.concat([hx2dup, hx1], axis=3))
+        side1 = self.side1(hx1d)
+
+        fused_output = self.outconv(tf.concat([side1, side2, side3, side4, side5, side6], axis=3))
+
+        sig = keras.activations.sigmoid
+        return tf.stack([sig(fused_output), sig(side1), sig(side2), sig(side3), sig(side4), sig(side5), sig(side6)])
+      
