@@ -18,7 +18,7 @@ parser.add_argument('--batch_size', default=None, type=int,
                     help='Training batch size')
 parser.add_argument('--lr', '--learning_rate', default=None, type=float,
                     help='Optimizer learning rate. Default: %s' % learning_rate)
-parser.add_argument('--save_interval', default=None, type=int,
+parser.add_argument('--save_interval', default=1, type=int,
                     help='How many iterations between saving of model weights')
 parser.add_argument('--weights_file', default=None, type=str,
                     help='Output location for model weights. Default: %s' % weights_file)
